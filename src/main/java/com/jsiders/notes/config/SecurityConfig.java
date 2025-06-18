@@ -30,7 +30,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((request) -> request
-                .requestMatchers("/public/**", "/api/auth/**", "/swagger-ui/**").permitAll()
+                .requestMatchers("/public/**", "/api/auth/**", "/actuator/**", "/v3/api-docs/**",
+                        "/swagger-ui.html",
+                        "/swagger-ui/**").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/api/note/**").hasRole("ADMIN")//Only Admin can delete the notes
                 .anyRequest()
                 .authenticated());
