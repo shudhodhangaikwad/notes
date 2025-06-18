@@ -1,36 +1,36 @@
 package com.jsiders.notes.config;
 
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
-import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import com.jsiders.notes.filters.JwtAuthenticationFilter;
+import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-@SecurityScheme(
-        name = "basicAuth", // This will be used in @SecurityRequirement
-        type = SecuritySchemeType.HTTP,
-        scheme = "basic"
-)
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
 @Configuration
 @EnableJpaAuditing
+@AllArgsConstructor
 public class SecurityConfig {
+
+
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((request) -> request
-                .requestMatchers("/public/**").permitAll()
+                .requestMatchers("/public/**","/api/auth/**").permitAll()
                 .anyRequest()
                 .authenticated());
         http.httpBasic(Customizer.withDefaults());
@@ -38,26 +38,15 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(AbstractHttpConfigurer::disable);
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
-
     @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails user = User
-                .withUsername("sid")
-                .password(passwordEncoder().encode("sid"))
-                //.authorities("ROLE_USER")
-                .build();
-        UserDetails admin = User
-                .withUsername("admin")
-                .password(passwordEncoder().encode("admin"))
-               // .authorities("ROLE_ADMIN")
-                .build();
-
-        return new InMemoryUserDetailsManager(user,admin);
-
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -68,6 +57,10 @@ public class SecurityConfig {
     public RoleHierarchy roleHierarchy(){
         return RoleHierarchyImpl.fromHierarchy("ROLE_ADMIN > ROLE_USER");
     }
+
+
+
+
 
 
 }

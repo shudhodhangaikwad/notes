@@ -1,1 +1,1 @@
-Note app that offers CRUD operations along with basic authentication
+## Note app that offers CRUD operations along with basic authentication,user credentials are stored in the in memory.
