@@ -1,5 +1,6 @@
 package com.jsiders.notes.sevice;
 
+import com.jsiders.notes.dto.AuthResponse;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -22,20 +23,29 @@ public class JwtService {
 
     private Logger logger = LoggerFactory.getLogger(JwtService.class);
 
-    public String generateToken(String username, Collection<? extends GrantedAuthority> authorities) {
+    public AuthResponse generateToken(String username, Collection<? extends GrantedAuthority> authorities) {
+
+        Date expiryTime = new Date(System.currentTimeMillis() + 1000 * 1000);
+
+
         Map<String, Object> claims = new HashMap<>();
         claims.put("roles", authorities.stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .issuer("Notes app")
                 .claims(claims)
                 .subject(username)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 10))
+                .expiration(expiryTime)
                 .signWith(secretKey)
                 .id(UUID.randomUUID().toString())
                 .compact();
+        return AuthResponse.builder()
+                .accessToken(token)
+                .expiresIn(expiryTime)
+                .type("Bearer")
+                .build();
 
     }
 
@@ -62,8 +72,6 @@ public class JwtService {
         }
         return isTokenValid;
     }
-
-
 
 
     private Claims extractClaims(String token) {

@@ -2,10 +2,10 @@ package com.jsiders.notes.config;
 
 import com.jsiders.notes.filters.JwtAuthenticationFilter;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,11 +30,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((request) -> request
-                .requestMatchers("/public/**","/api/auth/**").permitAll()
+                .requestMatchers("/public/**", "/api/auth/**", "/swagger-ui/**").permitAll()
+                .requestMatchers(HttpMethod.DELETE, "/api/note/**").hasRole("ADMIN")//Only Admin can delete the notes
                 .anyRequest()
                 .authenticated());
         http.httpBasic(Customizer.withDefaults());
-        http.sessionManagement(session-> session
+        http.sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(AbstractHttpConfigurer::disable);
@@ -54,13 +55,10 @@ public class SecurityConfig {
     }
 
 
-    public RoleHierarchy roleHierarchy(){
+    @Bean
+    public RoleHierarchy roleHierarchy() {
         return RoleHierarchyImpl.fromHierarchy("ROLE_ADMIN > ROLE_USER");
     }
-
-
-
-
 
 
 }

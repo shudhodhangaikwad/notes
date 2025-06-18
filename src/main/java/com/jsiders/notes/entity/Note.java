@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Note extends BaseEntity{
-    @Lob
+    //@Lob working only with MySQL
     private String content;
 
     @Column(nullable = false)

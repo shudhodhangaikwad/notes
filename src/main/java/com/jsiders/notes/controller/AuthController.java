@@ -7,6 +7,7 @@ import com.jsiders.notes.repository.NoteUserRepository;
 import com.jsiders.notes.sevice.JwtService;
 import com.jsiders.notes.sevice.impl.NoteUserService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 @AllArgsConstructor
+@Slf4j
 public class AuthController {
 
     private final NoteUserService noteUserService;
@@ -39,16 +41,10 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest authRequest) {
         Authentication authentication = new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword());
         Authentication auth = authenticationManager.authenticate(authentication);
-        System.out.println("Is Authenticated " + auth.isAuthenticated());
-
-
-        AuthResponse authResponse = AuthResponse.builder()
-                .accessToken(jwtService.generateToken(authRequest.getUsername(),auth.getAuthorities()))
-                .expiresIn(1254L)
-                .build();
+        log.info("Is Authenticated {}", auth.isAuthenticated());
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(authResponse);
+                .body(jwtService.generateToken(authRequest.getUsername(), auth.getAuthorities()));
 
     }
 

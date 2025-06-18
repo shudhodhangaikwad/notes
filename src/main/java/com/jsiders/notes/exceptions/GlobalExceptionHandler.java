@@ -1,6 +1,7 @@
 package com.jsiders.notes.exceptions;
 
 import com.jsiders.notes.dto.ErrorResponseDto;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
@@ -50,6 +51,9 @@ public class GlobalExceptionHandler {
                 status(HttpStatus.NOT_FOUND)
                 .body(errorResponseDto);
     }
+
+
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleAllExceptions(Exception e) {
